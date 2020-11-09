@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -29,7 +30,7 @@ func Shell() {
 	payloadOptions = &clitool.PayloadOptions{
 		TargetOS:        0,
 		TargetFramework: 0,
-		Payload:         "",
+		Payload:         0,
 	}
 
 	p, err := readline.NewEx(&readline.Config{
@@ -99,37 +100,45 @@ func Shell() {
 						fmt.Println("Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
-						switch cmd[0] {
-						case "1":
-
+						val, _ := strconv.Atoi(cmd[0])
+						_, err := clitool.ConvertUserInputToOperatingSystem(val - 1)
+						if err != nil {
+							fmt.Println("Input was not recognised, please try again")
+							setStateCreate(cliCreateState)
+						} else {
+							payloadOptions.TargetOS = val
+							setStateCreate(1)
 						}
-						setStateCreate(1)
 					}
 				case 1:
 					if !util.IsAnInteger(cmd[0]) {
 						fmt.Println("Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
-						switch cmd[0] {
-						case "1":
-							payloadOptions.TargetFramework = 0
-						case "2":
-							payloadOptions.TargetFramework = 1
+						val, _ := strconv.Atoi(cmd[0])
+						_, err := clitool.ConvertUserInputToFramework(val - 1)
+						if err != nil {
+							fmt.Println("Input was not recognised, please try again")
+							setStateCreate(cliCreateState)
+						} else {
+							payloadOptions.TargetFramework = val
+							setStateCreate(2)
 						}
-						setStateCreate(2)
 					}
 				case 2:
 					if !util.IsAnInteger(cmd[0]) {
 						fmt.Println("Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
-						payloadArg, err := clitool.ConvertUserInputToPayload(0)
+						val, _ := strconv.Atoi(cmd[0])
+						_, err := clitool.ConvertUserInputToPayload(val - 1)
 						if err != nil {
-							fmt.Println("Argument not recognised, please try again")
-							setStateCreate(2)
+							fmt.Println("Input was not recognised, please try again")
+							setStateCreate(cliCreateState)
+						} else {
+							payloadOptions.Payload = val
+							setStateCreate(3)
 						}
-						payloadOptions.Payload = payloadArg
-						setStateCreate(3)
 					}
 				}
 			}
@@ -139,7 +148,7 @@ func Shell() {
 
 func filterInput(r rune) (rune, bool) {
 	switch r {
-	// block CtrlZ feature
+	// block Ctrl + Z feature please. Ctrl+c is used to back out (as specified by Cli itself)
 	case readline.CharCtrlZ:
 		return r, false
 	}
@@ -220,8 +229,8 @@ func setStateGeneratePayload() {
 	targetPayload, _ := clitool.ConvertUserInputToPayload(payloadOptions.Payload)
 
 	fmt.Println("Payload ready to generate with following args:")
-	fmt.Println("\tTarget OS: %s", targetOS)
-	fmt.Println("\tTarget Framework: %s", targetFramework)
-	fmt.Println("\tPayload: %s", targetPayload)
+	fmt.Printf("\tTarget OS: %s\n", targetOS)
+	fmt.Printf("\tTarget Framework: %s\n", targetFramework)
+	fmt.Printf("\tPayload: %s\n", targetPayload)
 	fmt.Println("\nAre these correct?")
 }

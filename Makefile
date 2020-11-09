@@ -39,15 +39,15 @@ implant-darwin:
 
 # Compile Cli - MacOS
 cli-darwin:
-	export GOOS=darwin;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${D64} cmd/cli_tool/main.go
+	export GOOS=darwin;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${D64} cmd/clitool/main.go
 
 # Compile Cli - Linux x64
 cli-linux:
-	export GOOS=linux;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${L64} cmd/cli_tool/main.go
+	export GOOS=linux;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${L64} cmd/clitool/main.go
 
 # Compile Cli - Windows x64
 cli-windows:
-	export GOOS=windows;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${W64}.exe cmd/cli_tool/main.go
+	export GOOS=windows;export GOARCH=amd64;go build ${LDFLAGS} -o ${DIR}/${CLITOOL}-${W64}.exe cmd/clitool/main.go
 
 clean:
 	rm -rf ${DIR}*
