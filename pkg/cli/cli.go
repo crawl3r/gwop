@@ -25,14 +25,6 @@ var (
 
 // Shell is the exported function to start the command line interface
 func Shell() {
-	cliMenuState = "main"
-	cliCreateState = 0
-	payloadOptions = &clitool.PayloadOptions{
-		TargetOS:        0,
-		TargetFramework: 0,
-		Payload:         0,
-	}
-
 	p, err := readline.NewEx(&readline.Config{
 		Prompt:              "\033[31mGWOP»\033[0m ",
 		InterruptPrompt:     "^C",
@@ -46,6 +38,9 @@ func Shell() {
 		color.Red(err.Error())
 	}
 	prompt = p
+
+	// make sure the Cli state is set up AFTER the prompt is created otherwise we seg. Coding is hard.
+	setStateMainMenu()
 
 	defer func() {
 		err := prompt.Close()
@@ -92,6 +87,8 @@ func Shell() {
 					printListFrameworks()
 				case "payloads":
 					printListPayloads()
+				default:
+					fmt.Println("Sorry, input was not recognised")
 				}
 			case "create":
 				switch cliCreateState {
@@ -137,12 +134,40 @@ func Shell() {
 							setStateCreate(cliCreateState)
 						} else {
 							payloadOptions.Payload = val - 1
-							setStateGeneratePayload()
+							setStateCreate(3)
 						}
 					}
 				case 3:
+					if !util.IsLegalIPAddress(cmd[0]) {
+						fmt.Println("Sorry, input was not a legal IPV4 address")
+						setStateCreate(cliCreateState)
+					} else {
+						payloadOptions.Lhost = cmd[0]
+						setStateCreate(4)
+					}
 				case 4:
+					if !util.IsLegalPortNumber(cmd[0]) {
+						fmt.Println("Sorry, input was not a legal port value")
+						setStateCreate(cliCreateState)
+					} else {
+						payloadOptions.Lport = cmd[0]
+						setStateGeneratePayload()
+					}
 				}
+			case "generate":
+				switch cmd[0] {
+				case "y":
+					fmt.Println("Generating implant... please wait")
+					clitool.StartImplantCreationProcess(payloadOptions)
+					setStateStartListener()
+				case "n":
+					fmt.Println("Quitting back to main menu")
+					setStateMainMenu()
+				default:
+					fmt.Println("Sorry, input was unknown")
+				}
+			case "listener":
+
 			}
 		}
 	}
@@ -197,6 +222,13 @@ func printListPayloads() {
 // SetStateMainMenu sets the Cli state back to "main"
 func setStateMainMenu() {
 	cliMenuState = "main"
+	cliCreateState = 0
+	payloadOptions = &clitool.PayloadOptions{
+		TargetOS:        0,
+		TargetFramework: 0,
+		Payload:         0,
+	}
+
 	prompt.SetPrompt("\033[31mGWOP»\033[0m ")
 }
 
@@ -207,33 +239,31 @@ func setStateCreate(stage int) {
 	switch cliCreateState {
 	case 0:
 		fmt.Println("Please choose your target operating system:")
-		prompt.SetPrompt("\033[31mGWOP|OS»\033[0m")
+		prompt.SetPrompt("\033[31mGWOP|OS»\033[0m ")
 
 		for i, v := range clitool.OperatingSystemChoices {
 			fmt.Printf("%d - %s\n", i+1, v)
 		}
 	case 1:
 		fmt.Println("Please choose your target framework:")
-		prompt.SetPrompt("\033[31mGWOP|Framework»\033[0m")
+		prompt.SetPrompt("\033[31mGWOP|Framework»\033[0m ")
 
 		for i, v := range clitool.FrameworkChoices {
 			fmt.Printf("%d - %s\n", i+1, v)
 		}
 	case 2:
 		fmt.Println("Please choose your payload:")
-		prompt.SetPrompt("\033[31mGWOP|Payload»\033[0m")
+		prompt.SetPrompt("\033[31mGWOP|Payload»\033[0m ")
 
 		for i, v := range clitool.PayloadChoices {
 			fmt.Printf("%d - %s\n", i+1, v)
 		}
 	case 3:
-		// TODO: payload options LHOST
 		fmt.Println("Please specify the listener host IP:")
-		prompt.SetPrompt("\033[31mGWOP|lhost\033[0m")
+		prompt.SetPrompt("\033[31mGWOP|lhost\033[0m ")
 	case 4:
-		// TODO: payload options LPORT
 		fmt.Println("Please specify the listener host port:")
-		prompt.SetPrompt("\033[31mGWOP|lport\033[0m")
+		prompt.SetPrompt("\033[31mGWOP|lport\033[0m ")
 	}
 }
 
@@ -248,5 +278,22 @@ func setStateGeneratePayload() {
 	fmt.Printf("\tTarget OS: %s\n", targetOS)
 	fmt.Printf("\tTarget Framework: %s\n", targetFramework)
 	fmt.Printf("\tPayload: %s\n", targetPayload)
-	fmt.Println("\nShall we generate the implant with these options?")
+	fmt.Printf("\tListener IP: %s\n", payloadOptions.Lhost)
+	fmt.Printf("\tListener Port: %s\n", payloadOptions.Lport)
+	fmt.Printf("\nShall we generate the implant with these options?\n")
+
+	fmt.Println("y - yes")
+	fmt.Println("n - no (quits back to main menu)")
+
+	prompt.SetPrompt("\033[31mGWOP|generate\033[0m ")
+}
+
+func setStateStartListener() {
+	cliMenuState = "listener"
+
+	fmt.Printf("Payload generated, start listener?\n")
+	fmt.Println("y - yes")
+	fmt.Println("n - no (quits back to main menu)")
+
+	prompt.SetPrompt("\033[31mGWOP|listener\033[0m ")
 }
