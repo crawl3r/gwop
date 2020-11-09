@@ -1,6 +1,6 @@
 // +build linux darwin
 
-package c2agent
+package unusedatm
 
 import (
 	"syscall"
