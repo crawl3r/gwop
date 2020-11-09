@@ -1,3 +1,5 @@
+FYI - this doesn't do anything yet other than cli flow/logic and baits you into thinking it's doing a thing.
+
 ## GWOP - An attempt at developing an interactive implant creator/dropper/packer/thing  
   
 I've started playing around in HTB again recently and keep getting meh'd out my msfvenom and spinning up msf itself to catch the payloads. Figured I'd wrap it all into a nice little interactive cli tool.  
