@@ -106,7 +106,7 @@ func Shell() {
 							fmt.Println("Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
-							payloadOptions.TargetOS = val
+							payloadOptions.TargetOS = val - 1
 							setStateCreate(1)
 						}
 					}
@@ -121,7 +121,7 @@ func Shell() {
 							fmt.Println("Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
-							payloadOptions.TargetFramework = val
+							payloadOptions.TargetFramework = val - 1
 							setStateCreate(2)
 						}
 					}
@@ -131,15 +131,17 @@ func Shell() {
 						setStateCreate(cliCreateState)
 					} else {
 						val, _ := strconv.Atoi(cmd[0])
-						_, err := clitool.ConvertUserInputToPayload(val - 1)
+						_, err := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, val-1)
 						if err != nil {
 							fmt.Println("Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
-							payloadOptions.Payload = val
-							setStateCreate(3)
+							payloadOptions.Payload = val - 1
+							setStateGeneratePayload()
 						}
 					}
+				case 3:
+				case 4:
 				}
 			}
 		}
@@ -205,19 +207,33 @@ func setStateCreate(stage int) {
 	switch cliCreateState {
 	case 0:
 		fmt.Println("Please choose your target operating system:")
+		prompt.SetPrompt("\033[31mGWOP|OS»\033[0m")
 
-		// TODO: list, loopable so the logic switch above can check the answer easily
-
+		for i, v := range clitool.OperatingSystemChoices {
+			fmt.Printf("%d - %s\n", i+1, v)
+		}
 	case 1:
 		fmt.Println("Please choose your target framework:")
+		prompt.SetPrompt("\033[31mGWOP|Framework»\033[0m")
 
-		// TODO: list, loopable so the logic switch above can check the answer easily
+		for i, v := range clitool.FrameworkChoices {
+			fmt.Printf("%d - %s\n", i+1, v)
+		}
 	case 2:
 		fmt.Println("Please choose your payload:")
+		prompt.SetPrompt("\033[31mGWOP|Payload»\033[0m")
 
-		// TODO: list, loopable so the logic switch above can check the answer easily
+		for i, v := range clitool.PayloadChoices {
+			fmt.Printf("%d - %s\n", i+1, v)
+		}
 	case 3:
-		fmt.Println("Would you like to start the listener?")
+		// TODO: payload options LHOST
+		fmt.Println("Please specify the listener host IP:")
+		prompt.SetPrompt("\033[31mGWOP|lhost\033[0m")
+	case 4:
+		// TODO: payload options LPORT
+		fmt.Println("Please specify the listener host port:")
+		prompt.SetPrompt("\033[31mGWOP|lport\033[0m")
 	}
 }
 
@@ -226,11 +242,11 @@ func setStateGeneratePayload() {
 
 	targetOS, _ := clitool.ConvertUserInputToOperatingSystem(payloadOptions.TargetOS)
 	targetFramework, _ := clitool.ConvertUserInputToFramework(payloadOptions.TargetFramework)
-	targetPayload, _ := clitool.ConvertUserInputToPayload(payloadOptions.Payload)
+	targetPayload, _ := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, payloadOptions.Payload)
 
 	fmt.Println("Payload ready to generate with following args:")
 	fmt.Printf("\tTarget OS: %s\n", targetOS)
 	fmt.Printf("\tTarget Framework: %s\n", targetFramework)
 	fmt.Printf("\tPayload: %s\n", targetPayload)
-	fmt.Println("\nAre these correct?")
+	fmt.Println("\nShall we generate the implant with these options?")
 }

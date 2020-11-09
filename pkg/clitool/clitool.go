@@ -9,6 +9,28 @@ type PayloadOptions struct {
 	Payload         int // will map to the list presented in the CLI for easy scaling
 }
 
+// TODO: replace these with loaded JSON on start - easy scalable etc
+
+// OperatingSystemChoices ...
+var OperatingSystemChoices = []string{
+	"Windows",
+	"Linux",
+	"MacOSX",
+}
+
+// FrameworkChoices ...
+var FrameworkChoices = []string{
+	"Metasploit/MSFvenom",
+}
+
+// PayloadChoices ...
+var PayloadChoices = [][]string{
+	{
+		"linux/x86/meterpreter/reverse_tcp",
+		"windows/meterpreter/reverse_tcp",
+	},
+}
+
 func startImplantCreationProcess(opts *PayloadOptions) {
 	fmt.Printf("Generating payload with defined args:\nOS: %d\nFramework: %d\nPayload: %d\n", opts.TargetOS, opts.TargetFramework, opts.Payload)
 }
@@ -29,15 +51,31 @@ func buildAndStoreImplant( /* This will need to know the target platform for com
 
 // ConvertUserInputToOperatingSystem is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToOperatingSystem(val int) (string, error) {
-	return "", nil
+	if val > len(OperatingSystemChoices) {
+		return "", fmt.Errorf("No operating system choice found with input")
+	}
+
+	return OperatingSystemChoices[val], nil
 }
 
 // ConvertUserInputToFramework is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToFramework(val int) (string, error) {
-	return "", nil
+	if val > len(FrameworkChoices) {
+		return "", fmt.Errorf("No framework choice found with input")
+	}
+
+	return FrameworkChoices[val], nil
 }
 
 // ConvertUserInputToPayload is used to convert the user input (int) to the string value for the gen tools
-func ConvertUserInputToPayload(val int) (string, error) {
-	return "", nil
+func ConvertUserInputToPayload(frameworkVal int, val int) (string, error) {
+	if frameworkVal > len(PayloadChoices) {
+		return "", fmt.Errorf("No payloads found for framework choice")
+	}
+
+	if val > len(PayloadChoices[frameworkVal]) {
+		return "", fmt.Errorf("No payload choice found with input")
+	}
+
+	return PayloadChoices[frameworkVal][val], nil
 }
