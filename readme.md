@@ -6,7 +6,7 @@ Not only that, but this will also create an implant that will (in theory) bypass
   
 ### Platforms  
 Developed and tested on OSX, but Makefile has args for Windows (implant only), Linux (cli and implant) and OSX (cli and implant)  
-  
+    
 ### Other  
 If you're a skid like me, don't be a dick with this. If it works and bypasses stuff - don't hack your nan and flex on Twitter with it. Please.  
   
