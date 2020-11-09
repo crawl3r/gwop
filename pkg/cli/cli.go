@@ -167,7 +167,18 @@ func Shell() {
 					fmt.Println("Sorry, input was unknown")
 				}
 			case "listener":
+				switch cmd[0] {
+				case "y":
+					fmt.Println("Starting listener... please wait")
+					clitool.StartListenerProcess(payloadOptions)
 
+					// TODO: do we quit out and just focus another terminal window that is now our listener? Or overwrite the current output with listener?
+				case "n":
+					fmt.Println("Quitting back to main menu")
+					setStateMainMenu()
+				default:
+					fmt.Println("Sorry, input was unknown")
+				}
 			}
 		}
 	}

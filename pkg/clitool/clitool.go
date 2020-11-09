@@ -56,6 +56,11 @@ func compileAndStoreImplant( /* This will need to know the target platform for c
 	fmt.Println("Implant compiled and ready")
 }
 
+// StartListenerProcess is called by the cli on user demand and will start a listener related to the payload
+func StartListenerProcess(opts *PayloadOptions) {
+	fmt.Println("Starting listener for target payload")
+}
+
 // ConvertUserInputToOperatingSystem is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToOperatingSystem(val int) (string, error) {
 	if val > len(OperatingSystemChoices) {
