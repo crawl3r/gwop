@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gwop/pkg/cli"
+	"gwop/pkg/clitool"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,7 +18,8 @@ func init() {
 }
 
 func main() {
-	go cli.Shell() //  we (for arguments sake) get "stuck" in here, until a quit/exit/signal is issued
+	clitool.LoadJSONData()
+	go cli.Shell() //  we pretty much get "stuck" in here, until a quit/exit/signal is issued
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Press CTRL-C to exit or type 'exit' || 'quit'.")

@@ -252,21 +252,21 @@ func setStateCreate(stage int) {
 		fmt.Println("Please choose your target operating system:")
 		prompt.SetPrompt("\033[31mGWOP|OS»\033[0m ")
 
-		for i, v := range clitool.OperatingSystemChoices {
-			fmt.Printf("%d - %s\n", i+1, v)
+		for i, v := range clitool.GetOperatingSystems() {
+			fmt.Printf("%d - %s\n", i+1, v.Name)
 		}
 	case 1:
 		fmt.Println("Please choose your target framework:")
 		prompt.SetPrompt("\033[31mGWOP|Framework»\033[0m ")
 
-		for i, v := range clitool.FrameworkChoices {
-			fmt.Printf("%d - %s\n", i+1, v)
+		for i, v := range clitool.GetFrameworks() {
+			fmt.Printf("%d - %s\n", i+1, v.Name)
 		}
 	case 2:
 		fmt.Println("Please choose your payload:")
 		prompt.SetPrompt("\033[31mGWOP|Payload»\033[0m ")
 
-		for i, v := range clitool.PayloadChoices {
+		for i, v := range clitool.GetPayloads(payloadOptions.TargetFramework) {
 			fmt.Printf("%d - %s\n", i+1, v)
 		}
 	case 3:

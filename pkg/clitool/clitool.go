@@ -1,6 +1,11 @@
 package clitool
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
 
 // PayloadOptions is populated and passed into the clitool startImplantCreationProcess to help guide the flow
 type PayloadOptions struct {
@@ -11,27 +16,28 @@ type PayloadOptions struct {
 	Lport           string
 }
 
-// TODO: replace these with loaded JSON on start - easy scalable etc
+var jsonFilePath = "data/data.json"
 
-// OperatingSystemChoices ...
-var OperatingSystemChoices = []string{
-	"Windows",
-	"Linux",
-	"MacOSX",
+// AllLoadedData ...
+type AllLoadedData struct {
+	OperatingSystems []OperatingSystem `json:"operatingsystems"`
+	Frameworks       []Framework       `json:"frameworks"`
 }
 
-// FrameworkChoices ...
-var FrameworkChoices = []string{
-	"Metasploit/MSFvenom",
+// OperatingSystem ...
+type OperatingSystem struct {
+	Name string `json:"name"`
 }
 
-// PayloadChoices ...
-var PayloadChoices = [][]string{
-	{
-		"linux/x86/meterpreter/reverse_tcp",
-		"windows/meterpreter/reverse_tcp",
-	},
+// Framework ...
+type Framework struct {
+	Name         string   `json:"name"`
+	Generator    string   `json:"generator"`
+	GeneratorCmd string   `json:"generatorcommand"`
+	Payloads     []string `json:"payloads"`
 }
+
+var loadedData AllLoadedData
 
 // StartImplantCreationProcess is called by the cli upon completion of the 'create' state
 func StartImplantCreationProcess(opts *PayloadOptions) {
@@ -61,33 +67,62 @@ func StartListenerProcess(opts *PayloadOptions) {
 	fmt.Println("Starting listener for target payload")
 }
 
+// GetOperatingSystems is a getter for the slice of OS data loaded from JSON
+func GetOperatingSystems() []OperatingSystem {
+	return loadedData.OperatingSystems
+}
+
+// GetFrameworks is a getter for the slice of Framework data loaded from JSON
+func GetFrameworks() []Framework {
+	return loadedData.Frameworks
+}
+
+// GetPayloads is a getter for the specific payloads from the already selected Framework, loaded from JSON
+func GetPayloads(framework int) []string {
+	return loadedData.Frameworks[framework].Payloads
+}
+
 // ConvertUserInputToOperatingSystem is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToOperatingSystem(val int) (string, error) {
-	if val > len(OperatingSystemChoices) {
+	if val > len(loadedData.OperatingSystems) {
 		return "", fmt.Errorf("No operating system choice found with input")
 	}
 
-	return OperatingSystemChoices[val], nil
+	return loadedData.OperatingSystems[val].Name, nil
 }
 
 // ConvertUserInputToFramework is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToFramework(val int) (string, error) {
-	if val > len(FrameworkChoices) {
+	if val > len(loadedData.Frameworks) {
 		return "", fmt.Errorf("No framework choice found with input")
 	}
 
-	return FrameworkChoices[val], nil
+	return loadedData.Frameworks[val].Name, nil
 }
 
 // ConvertUserInputToPayload is used to convert the user input (int) to the string value for the gen tools
 func ConvertUserInputToPayload(frameworkVal int, val int) (string, error) {
-	if frameworkVal > len(PayloadChoices) {
+	if frameworkVal > len(loadedData.Frameworks) {
 		return "", fmt.Errorf("No payloads found for framework choice")
 	}
 
-	if val > len(PayloadChoices[frameworkVal]) {
+	if val > len(loadedData.Frameworks[frameworkVal].Payloads) {
 		return "", fmt.Errorf("No payload choice found with input")
 	}
 
-	return PayloadChoices[frameworkVal][val], nil
+	return loadedData.Frameworks[frameworkVal].Payloads[val], nil
+}
+
+// LoadJSONData is called at the start of the program (main.go) to populate our data here
+func LoadJSONData() {
+	jsonFile, err := os.Open(jsonFilePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Successfully opened %s\n", jsonFilePath)
+
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	json.Unmarshal(byteValue, &loadedData)
 }

@@ -1,0 +1,31 @@
+{
+    "operatingsystems": [
+        {
+            "name": "Windows"
+        },
+        {
+            "name": "Linux"
+        },
+        {
+            "name": "Mac OSX"
+        }
+    ],
+    "frameworks": [
+        {
+            "name": "Metasploit",
+            "generator": "msfvenom",
+            "generatorcommand": "msfvenom -p etc",
+            "payloads": [
+                "linux/x86/meterpreter/reverse_tcp",
+		        "windows/meterpreter/reverse_tcp"
+            ]
+        },
+        {
+            "name": "Empire",
+            "generator": "",
+            "generatorcommand": "",
+            "payloads": [
+            ]
+        }
+    ]
+}
