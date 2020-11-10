@@ -1,13 +1,16 @@
 {
     "operatingsystems": [
         {
-            "name": "Windows"
+            "name": "Windows",
+            "goarchi": "windows"
         },
         {
-            "name": "Linux"
+            "name": "Linux",
+            "goarchi": "linux"
         },
         {
-            "name": "Mac OSX"
+            "name": "Mac OSX",
+            "goarchi": "darwin"
         }
     ],
     "frameworks": [

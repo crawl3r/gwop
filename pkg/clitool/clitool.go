@@ -26,7 +26,8 @@ type AllLoadedData struct {
 
 // OperatingSystem ...
 type OperatingSystem struct {
-	Name string `json:"name"`
+	Name           string `json:"name"`
+	GoArchitecture string `json:"goarchi"`
 }
 
 // Framework ...
@@ -45,7 +46,7 @@ func StartImplantCreationProcess(opts *PayloadOptions) {
 
 	generatePayload()
 	generateImplantScript()
-	compileAndStoreImplant()
+	compileAndStoreImplant(opts)
 }
 
 // TODO: this will take the options and utilise the target tool to create the payload (msfvenom for example)
@@ -55,10 +56,17 @@ func generatePayload() {
 
 // This will take a script template for an implant and inject the data required (shellcode, key etc)
 func generateImplantScript() {
+	// load the implant.template text file into memory
+	// replace the key values with real values
+	// blit the text file to a Go script that is ready to be compiled (./cmd/implant_gen/main.go)
+
 	fmt.Println("Implant script created and ready for compilation")
 }
 
-func compileAndStoreImplant( /* This will need to know the target platform for compilation reasons */ ) {
+func compileAndStoreImplant(opts *PayloadOptions) {
+	// create a system call argument to one liner compile the script depending on the target architecture
+	fmt.Printf("Compiling for target architecture: %s\n", getGoArchitectureForOS(opts.TargetOS))
+
 	fmt.Println("Implant compiled and ready")
 }
 
@@ -111,6 +119,10 @@ func ConvertUserInputToPayload(frameworkVal int, val int) (string, error) {
 	}
 
 	return loadedData.Frameworks[frameworkVal].Payloads[val], nil
+}
+
+func getGoArchitectureForOS(osChoice int) string {
+	return loadedData.OperatingSystems[osChoice].GoArchitecture
 }
 
 // LoadJSONData is called at the start of the program (main.go) to populate our data here
