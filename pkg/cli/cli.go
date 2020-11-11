@@ -70,7 +70,7 @@ func Shell() {
 		if len(cmd) > 0 {
 			// First things first, let's break out if any of the states has a quit/exit request in it
 			if cmd[0] == "exit" || cmd[0] == "quit" || cmd[0] == "q" {
-				fmt.Println("Cleaning up and shutting down")
+				fmt.Println("[*] Cleaning up and shutting down")
 				syscall.Kill(syscall.Getpid(), syscall.SIGINT) // possibly derp but might work
 			}
 
@@ -88,19 +88,19 @@ func Shell() {
 				case "payloads":
 					printListPayloads()
 				default:
-					fmt.Println("Sorry, input was not recognised")
+					fmt.Println("[!] Sorry, input was not recognised")
 				}
 			case "create":
 				switch cliCreateState {
 				case 0:
 					if !util.IsAnInteger(cmd[0]) {
-						fmt.Println("Sorry, input was not an integer value")
+						fmt.Println("[!] Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
 						val, _ := strconv.Atoi(cmd[0])
 						_, err := clitool.ConvertUserInputToOperatingSystem(val - 1)
 						if err != nil {
-							fmt.Println("Input was not recognised, please try again")
+							fmt.Println("[!] Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
 							payloadOptions.TargetOS = val - 1
@@ -109,13 +109,13 @@ func Shell() {
 					}
 				case 1:
 					if !util.IsAnInteger(cmd[0]) {
-						fmt.Println("Sorry, input was not an integer value")
+						fmt.Println("[!] Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
 						val, _ := strconv.Atoi(cmd[0])
 						_, err := clitool.ConvertUserInputToFramework(val - 1)
 						if err != nil {
-							fmt.Println("Input was not recognised, please try again")
+							fmt.Println("[!] Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
 							payloadOptions.TargetFramework = val - 1
@@ -124,13 +124,13 @@ func Shell() {
 					}
 				case 2:
 					if !util.IsAnInteger(cmd[0]) {
-						fmt.Println("Sorry, input was not an integer value")
+						fmt.Println("[!] Sorry, input was not an integer value")
 						setStateCreate(cliCreateState)
 					} else {
 						val, _ := strconv.Atoi(cmd[0])
 						_, err := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, val-1)
 						if err != nil {
-							fmt.Println("Input was not recognised, please try again")
+							fmt.Println("[!] Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
 						} else {
 							payloadOptions.Payload = val - 1
@@ -139,7 +139,7 @@ func Shell() {
 					}
 				case 3:
 					if !util.IsLegalIPAddress(cmd[0]) {
-						fmt.Println("Sorry, input was not a legal IPV4 address")
+						fmt.Println("[!] Sorry, input was not a legal IPV4 address")
 						setStateCreate(cliCreateState)
 					} else {
 						payloadOptions.Lhost = cmd[0]
@@ -147,7 +147,7 @@ func Shell() {
 					}
 				case 4:
 					if !util.IsLegalPortNumber(cmd[0]) {
-						fmt.Println("Sorry, input was not a legal port value")
+						fmt.Println("[!] Sorry, input was not a legal port value")
 						setStateCreate(cliCreateState)
 					} else {
 						payloadOptions.Lport = cmd[0]
@@ -157,27 +157,27 @@ func Shell() {
 			case "generate":
 				switch cmd[0] {
 				case "y":
-					fmt.Println("Generating implant... please wait")
+					fmt.Println("[*] Generating implant... please wait")
 					clitool.StartImplantCreationProcess(payloadOptions)
 					setStateStartListener()
 				case "n":
-					fmt.Println("Quitting back to main menu")
+					fmt.Println("[*] Quitting back to main menu")
 					setStateMainMenu()
 				default:
-					fmt.Println("Sorry, input was unknown")
+					fmt.Println("[!] Sorry, input was unknown")
 				}
 			case "listener":
 				switch cmd[0] {
 				case "y":
-					fmt.Println("Starting listener... please wait")
+					fmt.Println("[*] Starting listener... please wait")
 					clitool.StartListenerProcess(payloadOptions)
 
 					// TODO: do we quit out and just focus another terminal window that is now our listener? Or overwrite the current output with listener?
 				case "n":
-					fmt.Println("Quitting back to main menu")
+					fmt.Println("[*] Quitting back to main menu")
 					setStateMainMenu()
 				default:
-					fmt.Println("Sorry, input was unknown")
+					fmt.Println("[!] Sorry, input was unknown")
 				}
 			}
 		}
@@ -239,7 +239,7 @@ func setStateMainMenu() {
 		TargetFramework: 0,
 		Payload:         0,
 	}
-
+	fmt.Println("Type 'create' to get started, or 'help' for other options")
 	prompt.SetPrompt("\033[31mGWOP»\033[0m ")
 }
 

@@ -45,8 +45,6 @@ var loadedData AllLoadedData
 
 // StartImplantCreationProcess is called by the cli upon completion of the 'create' state
 func StartImplantCreationProcess(opts *PayloadOptions) {
-	fmt.Printf("Generating payload with defined args:\nOS: %d\nFramework: %d\nPayload: %d\n", opts.TargetOS, opts.TargetFramework, opts.Payload)
-
 	shellcode := generatePayload(opts)
 	generateImplantScript(shellcode)
 	compileAndStoreImplant(opts)
@@ -54,7 +52,9 @@ func StartImplantCreationProcess(opts *PayloadOptions) {
 
 // TODO: this will take the options and utilise the target tool to create the payload (msfvenom for example)
 func generatePayload(opts *PayloadOptions) string {
-	fmt.Println("Payload generated")
+	framework, _ := ConvertUserInputToFramework(opts.TargetFramework)
+	fmt.Printf("[*] Generating payload with target framework: %s\n", framework)
+	fmt.Println("[*] Payload generated")
 	return "deadbeef"
 }
 
@@ -91,38 +91,35 @@ func generateImplantScript(shellcode string) {
 	fmt.Println("-----------------------")
 
 	// 2) edit the target script variables here, might change to a switch case based on the OS
-	fmt.Println("Editing implant script data")
+	fmt.Println("[*] Editing implant script data")
 	for i := 0; i < len(lines); i++ {
 		l := lines[i]
 		if strings.Contains(l, "<--HEXSC-->") {
-			fmt.Println("Found hex shellcode key. Adding shellcode to template")
+			fmt.Println("[*] Found hex shellcode key. Adding shellcode to template")
 			lines[i] = strings.Replace(l, "<--HEXSC-->", shellcode, -1)
 		}
 	}
 
 	// 3) blit text to a go script ready for compilation
-	fmt.Println("Blitting implant file to Go script")
+	fmt.Println("[*] Blitting implant file to Go script")
 	implantFile, err := os.Create("cmd/implant_gen/main.go")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
 	for _, l := range lines {
 		_, err = implantFile.WriteString(l + "\n")
 		if err != nil {
-			fmt.Println(err)
 			implantFile.Close()
-			return
+			log.Fatal(err)
 		}
 	}
 	err = implantFile.Close()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
-	fmt.Println("Implant script created and ready for compilation (cmd/implant_gen/main.go)")
+	fmt.Println("[*] Implant script created and ready for compilation (cmd/implant_gen/main.go)")
 }
 
 func compileAndStoreImplant(opts *PayloadOptions) {
@@ -131,13 +128,12 @@ func compileAndStoreImplant(opts *PayloadOptions) {
 
 	cmd := "export GOOS=" + targetOs + ";export GOARCH=amd64;go build -ldflags \"-s -w\" -o data/implant-" + targetOs + " cmd/implant_dev/main.go"
 
-	fmt.Println("Implant compile CMD: ", cmd)
-	fmt.Println("Implant compiled and ready")
+	fmt.Println("[*] Implant compile CMD: ", cmd)
+	fmt.Println("[*] Implant compiled and ready")
 }
 
 // StartListenerProcess is called by the cli on user demand and will start a listener related to the payload
 func StartListenerProcess(opts *PayloadOptions) {
-	fmt.Println("Starting listener for target payload")
 }
 
 // GetOperatingSystems is a getter for the slice of OS data loaded from JSON
@@ -196,7 +192,7 @@ func LoadJSONData() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Successfully opened %s\n", jsonFilePath)
+	fmt.Printf("[*] Successfully opened %s\n", jsonFilePath)
 
 	defer jsonFile.Close()
 
