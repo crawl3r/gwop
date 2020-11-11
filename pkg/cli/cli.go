@@ -69,7 +69,7 @@ func Shell() {
 		// let's figure out the requested command
 		if len(cmd) > 0 {
 			// First things first, let's break out if any of the states has a quit/exit request in it
-			if cmd[0] == "exit" || cmd[0] == "quit" {
+			if cmd[0] == "exit" || cmd[0] == "quit" || cmd[0] == "q" {
 				fmt.Println("Cleaning up and shutting down")
 				syscall.Kill(syscall.Getpid(), syscall.SIGINT) // possibly derp but might work
 			}

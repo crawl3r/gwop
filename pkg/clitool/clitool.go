@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 // PayloadOptions is populated and passed into the clitool startImplantCreationProcess to help guide the flow
@@ -63,16 +64,16 @@ func generateImplantScript() {
 	// blit the text file to a Go script that is ready to be compiled (./cmd/implant_gen/main.go)
 
 	// 1) Load the file into memory line by line
-	f, err := os.Open("data/implant.template")
+	templateFile, err := os.Open("data/implant.template")
 	lines := []string{}
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer f.Close()
+	defer templateFile.Close()
 
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
@@ -88,10 +89,38 @@ func generateImplantScript() {
 	fmt.Println("-----------------------")
 
 	// 2) edit the target script variables here, might change to a switch case based on the OS
+	fmt.Println("Editing implant script data")
+	for i := 0; i < len(lines); i++ {
+		l := lines[i]
+		if strings.Contains(l, "<--HEXSC-->") {
+			fmt.Println("Found hex shellcode key. Adding shellcode to template")
+			lines[i] = strings.Replace(l, "<--HEXSC-->", "DEADBEEF", -1)
+		}
+	}
 
-	// 3) blit text to a go script
+	// 3) blit text to a go script ready for compilation
+	fmt.Println("Blitting implant file to Go script")
+	implantFile, err := os.Create("cmd/implant_gen/main.go")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	fmt.Println("Implant script created and ready for compilation")
+	for _, l := range lines {
+		_, err = implantFile.WriteString(l + "\n")
+		if err != nil {
+			fmt.Println(err)
+			implantFile.Close()
+			return
+		}
+	}
+	err = implantFile.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("Implant script created and ready for compilation (cmd/implant_gen/main.go)")
 }
 
 func compileAndStoreImplant(opts *PayloadOptions) {
