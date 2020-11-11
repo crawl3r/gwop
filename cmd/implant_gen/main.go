@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	a := "DEADBEEF"
+	a := "deadbeef"
 	b, err := hex.DecodeString(a)
 	if err != nil {
 		os.Exit(1)

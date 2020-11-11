@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -47,7 +48,9 @@ var loadedData AllLoadedData
 func StartImplantCreationProcess(opts *PayloadOptions) {
 	shellcode := generatePayload(opts)
 	generateImplantScript(shellcode)
-	compileAndStoreImplant(opts)
+	if !compileAndStoreImplant(opts) {
+		fmt.Println("Implant failed to compile")
+	}
 }
 
 // TODO: this will take the options and utilise the target tool to create the payload (msfvenom for example)
@@ -122,14 +125,37 @@ func generateImplantScript(shellcode string) {
 	fmt.Println("[*] Implant script created and ready for compilation (cmd/implant_gen/main.go)")
 }
 
-func compileAndStoreImplant(opts *PayloadOptions) {
+func compileAndStoreImplant(opts *PayloadOptions) bool {
 	// create a system call argument to one liner compile the script depending on the target architecture
 	targetOs := getGoArchitectureForOS(opts.TargetOS)
 
-	cmd := "export GOOS=" + targetOs + ";export GOARCH=amd64;go build -ldflags \"-s -w\" -o data/implant-" + targetOs + " cmd/implant_dev/main.go"
+	// set up compile script
+	compileScript, err := os.OpenFile("helpers/compile.sh", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer compileScript.Close()
 
-	fmt.Println("[*] Implant compile CMD: ", cmd)
-	fmt.Println("[*] Implant compiled and ready")
+	fileExt := ""
+	if opts.TargetOS == 0 {
+		fileExt = ".exe"
+	}
+	line := "export GOOS=" + targetOs + "; export GOARCH=amd64;go build -ldflags \"-s -w\" -o out/implant-" + targetOs + fileExt + " cmd/implant_dev/main.go"
+	_, err = compileScript.WriteString(line)
+	if err != nil {
+		compileScript.Close()
+		log.Fatal(err)
+	}
+
+	compileScript.Close()
+
+	_, err = exec.Command("/bin/sh", "helpers/compile.sh").Output()
+	if err != nil {
+		fmt.Printf("error %s", err)
+	}
+
+	fmt.Printf("[*] Implant compiled and ready. Stored in 'out/implant-%s%s'\n", targetOs, fileExt)
+	return true
 }
 
 // StartListenerProcess is called by the cli on user demand and will start a listener related to the payload
