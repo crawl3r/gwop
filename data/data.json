@@ -19,15 +19,18 @@
             "generator": "msfvenom",
             "generatorcommand": "msfvenom -p etc",
             "payloads": [
-                "linux/x86/meterpreter/reverse_tcp",
-		        "windows/meterpreter/reverse_tcp"
-            ]
-        },
-        {
-            "name": "Empire",
-            "generator": "",
-            "generatorcommand": "",
-            "payloads": [
+                {
+                    "operatingsystem": "Windows",
+                    "options": [
+                        "windows/meterpreter/reverse_tcp"
+                    ]
+                },
+                {
+                    "operatingsystem": "Linux",
+                    "options": [
+                        "linux/x86/meterpreter/reverse_tcp"
+                    ]
+                }
             ]
         }
     ]

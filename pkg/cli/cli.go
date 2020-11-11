@@ -128,7 +128,7 @@ func Shell() {
 						setStateCreate(cliCreateState)
 					} else {
 						val, _ := strconv.Atoi(cmd[0])
-						_, err := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, val-1)
+						_, err := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, payloadOptions.TargetOS, val-1)
 						if err != nil {
 							fmt.Println("[!] Input was not recognised, please try again")
 							setStateCreate(cliCreateState)
@@ -235,9 +235,9 @@ func setStateMainMenu() {
 	cliMenuState = "main"
 	cliCreateState = 0
 	payloadOptions = &clitool.PayloadOptions{
-		TargetOS:        0,
-		TargetFramework: 0,
-		Payload:         0,
+		TargetOS:        -1,
+		TargetFramework: -1,
+		Payload:         -1,
 	}
 	fmt.Println("Type 'create' to get started, or 'help' for other options")
 	prompt.SetPrompt("\033[31mGWOP»\033[0m ")
@@ -259,14 +259,14 @@ func setStateCreate(stage int) {
 		fmt.Println("Please choose your target framework:")
 		prompt.SetPrompt("\033[31mGWOP|Framework»\033[0m ")
 
-		for i, v := range clitool.GetFrameworks() {
+		for i, v := range clitool.GetFrameworks(payloadOptions.TargetOS) {
 			fmt.Printf("%d - %s\n", i+1, v.Name)
 		}
 	case 2:
 		fmt.Println("Please choose your payload:")
 		prompt.SetPrompt("\033[31mGWOP|Payload»\033[0m ")
 
-		for i, v := range clitool.GetPayloads(payloadOptions.TargetFramework) {
+		for i, v := range clitool.GetPayloads(payloadOptions.TargetFramework, payloadOptions.TargetOS) {
 			fmt.Printf("%d - %s\n", i+1, v)
 		}
 	case 3:
@@ -283,7 +283,7 @@ func setStateGeneratePayload() {
 
 	targetOS, _ := clitool.ConvertUserInputToOperatingSystem(payloadOptions.TargetOS)
 	targetFramework, _ := clitool.ConvertUserInputToFramework(payloadOptions.TargetFramework)
-	targetPayload, _ := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, payloadOptions.Payload)
+	targetPayload, _ := clitool.ConvertUserInputToPayload(payloadOptions.TargetFramework, payloadOptions.TargetOS, payloadOptions.Payload)
 
 	fmt.Println("Payload ready to generate with following args:")
 	fmt.Printf("\tTarget OS: %s\n", targetOS)

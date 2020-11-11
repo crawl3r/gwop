@@ -36,10 +36,16 @@ type OperatingSystem struct {
 
 // Framework ...
 type Framework struct {
-	Name         string   `json:"name"`
-	Generator    string   `json:"generator"`
-	GeneratorCmd string   `json:"generatorcommand"`
-	Payloads     []string `json:"payloads"`
+	Name         string    `json:"name"`
+	Generator    string    `json:"generator"`
+	GeneratorCmd string    `json:"generatorcommand"`
+	Payloads     []Payload `json:"payloads"`
+}
+
+// Payload ...
+type Payload struct {
+	OperatingSystem string   `json:"operatingsystem"`
+	Options         []string `json:"options"`
 }
 
 var loadedData AllLoadedData
@@ -168,13 +174,36 @@ func GetOperatingSystems() []OperatingSystem {
 }
 
 // GetFrameworks is a getter for the slice of Framework data loaded from JSON
-func GetFrameworks() []Framework {
-	return loadedData.Frameworks
+func GetFrameworks(targetOs int) []Framework {
+	if targetOs == -1 {
+		return loadedData.Frameworks
+	}
+
+	possibleFrameworks := []Framework{}
+	osName, _ := ConvertUserInputToOperatingSystem(targetOs)
+
+	for i := range loadedData.Frameworks {
+		isLegalFramework := false
+		currentFramework := loadedData.Frameworks[i]
+		for j := range currentFramework.Payloads {
+			currentPayloadSelection := currentFramework.Payloads[j]
+			if currentPayloadSelection.OperatingSystem == osName {
+				isLegalFramework = true
+			}
+		}
+
+		if isLegalFramework {
+			possibleFrameworks = append(possibleFrameworks, currentFramework)
+		}
+	}
+
+	return possibleFrameworks
 }
 
 // GetPayloads is a getter for the specific payloads from the already selected Framework, loaded from JSON
-func GetPayloads(framework int) []string {
-	return loadedData.Frameworks[framework].Payloads
+func GetPayloads(framework int, opSys int) []string {
+	possibleFrameworks := GetFrameworks(opSys)
+	return possibleFrameworks[framework].Payloads[opSys].Options
 }
 
 // ConvertUserInputToOperatingSystem is used to convert the user input (int) to the string value for the gen tools
@@ -196,16 +225,20 @@ func ConvertUserInputToFramework(val int) (string, error) {
 }
 
 // ConvertUserInputToPayload is used to convert the user input (int) to the string value for the gen tools
-func ConvertUserInputToPayload(frameworkVal int, val int) (string, error) {
+func ConvertUserInputToPayload(frameworkVal int, opSysVal int, val int) (string, error) {
 	if frameworkVal > len(loadedData.Frameworks) {
 		return "", fmt.Errorf("No payloads found for framework choice")
 	}
 
-	if val > len(loadedData.Frameworks[frameworkVal].Payloads) {
+	if opSysVal > len(loadedData.Frameworks[frameworkVal].Payloads) {
+		return "", fmt.Errorf("No payloads found for operating system choice")
+	}
+
+	if val > len(loadedData.Frameworks[frameworkVal].Payloads[opSysVal].Options) {
 		return "", fmt.Errorf("No payload choice found with input")
 	}
 
-	return loadedData.Frameworks[frameworkVal].Payloads[val], nil
+	return loadedData.Frameworks[frameworkVal].Payloads[opSysVal].Options[val], nil
 }
 
 func getGoArchitectureForOS(osChoice int) string {
