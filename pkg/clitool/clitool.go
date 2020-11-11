@@ -1,9 +1,11 @@
 package clitool
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -60,13 +62,45 @@ func generateImplantScript() {
 	// replace the key values with real values
 	// blit the text file to a Go script that is ready to be compiled (./cmd/implant_gen/main.go)
 
+	// 1) Load the file into memory line by line
+	f, err := os.Open("data/implant.template")
+	lines := []string{}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("---- loaded script ----")
+	for _, l := range lines {
+		fmt.Println(l)
+	}
+	fmt.Println("-----------------------")
+
+	// 2) edit the target script variables here, might change to a switch case based on the OS
+
+	// 3) blit text to a go script
+
 	fmt.Println("Implant script created and ready for compilation")
 }
 
 func compileAndStoreImplant(opts *PayloadOptions) {
 	// create a system call argument to one liner compile the script depending on the target architecture
-	fmt.Printf("Compiling for target architecture: %s\n", getGoArchitectureForOS(opts.TargetOS))
+	targetOs := getGoArchitectureForOS(opts.TargetOS)
 
+	cmd := "export GOOS=" + targetOs + ";export GOARCH=amd64;go build -ldflags \"-s -w\" -o data/implant-" + targetOs + " cmd/implant_dev/main.go"
+
+	fmt.Println("Implant compile CMD: ", cmd)
 	fmt.Println("Implant compiled and ready")
 }
 
