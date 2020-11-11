@@ -47,18 +47,20 @@ var loadedData AllLoadedData
 func StartImplantCreationProcess(opts *PayloadOptions) {
 	fmt.Printf("Generating payload with defined args:\nOS: %d\nFramework: %d\nPayload: %d\n", opts.TargetOS, opts.TargetFramework, opts.Payload)
 
-	generatePayload()
-	generateImplantScript()
+	shellcode := generatePayload(opts)
+	generateImplantScript(shellcode)
 	compileAndStoreImplant(opts)
 }
 
 // TODO: this will take the options and utilise the target tool to create the payload (msfvenom for example)
-func generatePayload() {
+func generatePayload(opts *PayloadOptions) string {
 	fmt.Println("Payload generated")
+	return "deadbeef"
 }
 
 // This will take a script template for an implant and inject the data required (shellcode, key etc)
-func generateImplantScript() {
+func generateImplantScript(shellcode string) {
+	// logic
 	// load the implant.template text file into memory
 	// replace the key values with real values
 	// blit the text file to a Go script that is ready to be compiled (./cmd/implant_gen/main.go)
@@ -94,7 +96,7 @@ func generateImplantScript() {
 		l := lines[i]
 		if strings.Contains(l, "<--HEXSC-->") {
 			fmt.Println("Found hex shellcode key. Adding shellcode to template")
-			lines[i] = strings.Replace(l, "<--HEXSC-->", "DEADBEEF", -1)
+			lines[i] = strings.Replace(l, "<--HEXSC-->", shellcode, -1)
 		}
 	}
 
