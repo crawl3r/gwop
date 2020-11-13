@@ -1,1 +1,1 @@
-export GOOS=windows; export GOARCH=amd64;go build -ldflags "-s -w" -o out/implant-windows.exe cmd/implant_dev/main.go
+go build -ldflags "-s -w" -o out/implant-windows.exe cmd/implant_dev/main.go

@@ -63,6 +63,7 @@ func StartImplantCreationProcess(opts *PayloadOptions) {
 func generatePayload(opts *PayloadOptions) string {
 	framework, _ := ConvertUserInputToFramework(opts.TargetFramework)
 	fmt.Printf("[*] Generating payload with target framework: %s\n", framework)
+
 	fmt.Println("[*] Payload generated")
 	return "deadbeef"
 }
@@ -135,6 +136,22 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 	// create a system call argument to one liner compile the script depending on the target architecture
 	targetOs := getGoArchitectureForOS(opts.TargetOS)
 
+	// Environment variables for current build
+	// first we cache the current ones
+	fmt.Println("[*] Cacheing current build environment variables")
+	currentGoOsEnv := os.Getenv(targetOs)
+	currentGoArchEnv := os.Getenv("GOARCH")
+
+	// now we set the environment variables for the new build
+	osEnvErr := os.Setenv("GOOS", targetOs)
+	if osEnvErr != nil {
+		log.Fatal("Error setting GOOS env var:", osEnvErr)
+	}
+	osEnvErr = os.Setenv("GOARCH", "amd64") // TODO: extend this to allow other architectures
+	if osEnvErr != nil {
+		log.Fatal("Error setting GOARCH env var:", osEnvErr)
+	}
+
 	// set up compile script
 	compileScript, err := os.OpenFile("helpers/compile.sh", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
@@ -146,7 +163,7 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 	if opts.TargetOS == 0 {
 		fileExt = ".exe"
 	}
-	line := "export GOOS=" + targetOs + "; export GOARCH=amd64;go build -ldflags \"-s -w\" -o out/implant-" + targetOs + fileExt + " cmd/implant_dev/main.go"
+	line := "go build -ldflags \"-s -w\" -o out/implant-" + targetOs + fileExt + " cmd/implant_dev/main.go"
 	_, err = compileScript.WriteString(line)
 	if err != nil {
 		compileScript.Close()
@@ -155,9 +172,21 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 
 	compileScript.Close()
 
+	// TODO: don't be a moron and use file I/O just to build and execute a one liner...
 	_, err = exec.Command("/bin/sh", "helpers/compile.sh").Output()
 	if err != nil {
 		fmt.Printf("error %s", err)
+	}
+
+	fmt.Println("[*] Restoring environment variables")
+	// set the environment variables back to their previous values
+	osEnvErr = os.Setenv("GOOS", currentGoOsEnv)
+	if osEnvErr != nil {
+		log.Fatal("Error setting GOOS env var back:", osEnvErr)
+	}
+	osEnvErr = os.Setenv("GOARCH", currentGoArchEnv)
+	if osEnvErr != nil {
+		log.Fatal("Error setting GOARCH env var back:", osEnvErr)
 	}
 
 	fmt.Printf("[*] Implant compiled and ready. Stored in 'out/implant-%s%s'\n", targetOs, fileExt)
