@@ -152,30 +152,14 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 		log.Fatal("Error setting GOARCH env var:", osEnvErr)
 	}
 
-	// set up compile script
-	compileScript, err := os.OpenFile("helpers/compile.sh", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer compileScript.Close()
-
 	fileExt := ""
 	if opts.TargetOS == 0 {
 		fileExt = ".exe"
 	}
-	line := "go build -ldflags \"-s -w\" -o out/implant-" + targetOs + fileExt + " cmd/implant_dev/main.go"
-	_, err = compileScript.WriteString(line)
-	if err != nil {
-		compileScript.Close()
-		log.Fatal(err)
-	}
 
-	compileScript.Close()
-
-	// TODO: don't be a moron and use file I/O just to build and execute a one liner...
-	_, err = exec.Command("/bin/sh", "helpers/compile.sh").Output()
+	_, err := exec.Command("go", "build", "-ldflags", "-s -w", "-o", "out/implant-"+targetOs+fileExt, "cmd/implant_gen/main.go").Output()
 	if err != nil {
-		fmt.Printf("error %s", err)
+		fmt.Println("Compilation err:", err)
 	}
 
 	fmt.Println("[*] Restoring environment variables")
