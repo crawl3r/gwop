@@ -67,17 +67,25 @@ func generatePayload(opts *PayloadOptions) string {
 	framework, _ := ConvertUserInputToFramework(opts.TargetFramework)
 	fmt.Printf("[*] Generating payload with target framework: %s\n", framework)
 
-	generatorCmd := loadedData.Frameworks[opts.TargetFramework].GeneratorCmd
+	generatorCmd := loadedData.Frameworks[opts.TargetFramework].Generator
+	generatorCmdArgs := loadedData.Frameworks[opts.TargetFramework].GeneratorCmd
 
 	payload, _ := ConvertUserInputToPayload(opts.TargetFramework, opts.TargetOS, opts.Payload)
-	generatorCmd = strings.Replace(generatorCmd, "<--payload-->", payload, 1)
-	generatorCmd = strings.Replace(generatorCmd, "<--ip-->", opts.Lhost, 1)
-	generatorCmd = strings.Replace(generatorCmd, "<--port-->", opts.Lport, 1)
-	splitGeneratorCmd := strings.Split(generatorCmd, " ")
+	generatorCmdArgs = strings.Replace(generatorCmdArgs, "<--payload-->", payload, 1)
+	generatorCmdArgs = strings.Replace(generatorCmdArgs, "<--ip-->", opts.Lhost, 1)
+	generatorCmdArgs = strings.Replace(generatorCmdArgs, "<--port-->", opts.Lport, 1)
+	splitGeneratorCmdArgs := strings.Split(generatorCmdArgs, " ")
 
-	fmt.Println(splitGeneratorCmd)
+	fmt.Println(generatorCmd, splitGeneratorCmdArgs)
+
+	genOut, err := exec.Command(generatorCmd, splitGeneratorCmdArgs...).Output()
+	if err != nil {
+		fmt.Println("Payload generation err:", err)
+	}
 
 	fmt.Println("[*] Payload generated")
+	fmt.Println(genOut)
+
 	return "deadbeef"
 }
 

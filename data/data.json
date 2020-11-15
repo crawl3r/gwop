@@ -17,7 +17,7 @@
         {
             "name": "Metasploit",
             "generator": "msfvenom",
-            "generatorcommand": "msfvenom -p <--payload--> LHOST=<--ip--> LPORT=<--port--> -f hex",
+            "generatorcommand": "-p <--payload--> LHOST=<--ip--> LPORT=<--port--> -f hex",
             "listenercommand": "msfconsole",
             "payloads": [
                 {
