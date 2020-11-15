@@ -179,6 +179,7 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 
 // StartListenerProcess is called by the cli on user demand and will start a listener related to the payload
 func StartListenerProcess(opts *PayloadOptions) {
+	fmt.Println("[!] Todo: implement this")
 }
 
 // GetOperatingSystems is a getter for the slice of OS data loaded from JSON
@@ -217,6 +218,17 @@ func GetFrameworks(targetOs int) []Framework {
 func GetPayloads(framework int, opSys int) []string {
 	possibleFrameworks := GetFrameworks(opSys)
 	return possibleFrameworks[framework].Payloads[opSys].Options
+}
+
+// GetFrameworkOperatingSystemOptions is used in the menu states when helping list available Frameworks and their OS
+func GetFrameworkOperatingSystemOptions(frameworkId int) []string {
+	opSystems := []string{}
+
+	for _, p := range loadedData.Frameworks[frameworkId].Payloads {
+		opSystems = append(opSystems, p.OperatingSystem)
+	}
+
+	return opSystems
 }
 
 // ConvertUserInputToOperatingSystem is used to convert the user input (int) to the string value for the gen tools

@@ -82,7 +82,7 @@ func Shell() {
 				case "create":
 					setStateCreate(0)
 				case "targets":
-					printListTargets()
+					printListTargetOperatingSystems()
 				case "frameworks":
 					printListFrameworks()
 				case "payloads":
@@ -203,7 +203,7 @@ func printHelpMainMenu() {
 		{"create", "Begins the interactive dropper creation process"},
 		{"targets", "Lists the current target operating systems"},
 		{"frameworks", "Lists the current frameworks/C2 platforms available"},
-		{"payloads", "Lists all possible payloads"},
+		{"payloads n", "Lists all possible payloads (n = target OS)"},
 		{"help", "Prints ths menu"},
 		{"exit", "Exit and close the GWOP cli tool"},
 		{"quit", "Exit and close the GWOP cli tool"},
@@ -215,16 +215,61 @@ func printHelpMainMenu() {
 	fmt.Println()
 }
 
-func printListTargets() {
-	// TODO
-	fmt.Println("TODO")
+func printListTargetOperatingSystems() {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+	table.SetHeader([]string{"#", "Operating System"})
+
+	data := [][]string{}
+
+	for i, opSys := range clitool.GetOperatingSystems() {
+		lineData := []string{}
+		lineData = append(lineData, strconv.Itoa(i))
+		lineData = append(lineData, opSys.Name)
+		data = append(data, lineData)
+	}
+
+	table.AppendBulk(data)
+	fmt.Println()
+	table.Render()
+	fmt.Println()
 }
 
 func printListFrameworks() {
-	// TODO
-	fmt.Println("TODO")
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+	table.SetHeader([]string{"#", "Frameworks", "Operating Systems"})
+
+	data := [][]string{}
+	for i, f := range clitool.GetFrameworks(-1) {
+		lineData := []string{}
+		lineData = append(lineData, strconv.Itoa(i+1))
+		lineData = append(lineData, f.Name)
+
+		// OSes available
+		oses := clitool.GetFrameworkOperatingSystemOptions(i)
+		osToPrint := ""
+		for i, s := range oses {
+			osToPrint += s
+			if i < len(oses)-1 {
+				osToPrint += ", "
+			}
+		}
+		lineData = append(lineData, osToPrint)
+		data = append(data, lineData)
+	}
+
+	table.AppendBulk(data)
+	fmt.Println()
+	table.Render()
+	fmt.Println()
 }
 
+// Unlike the other prints, this one could be pretty hectic output due to the different frameworks
+// It is worth having the user do 'payloads 1' for listing Windows
+// 'payloads 2' for listing Linux etc
 func printListPayloads() {
 	// TODO
 	fmt.Println("TODO")
