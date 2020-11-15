@@ -40,6 +40,7 @@ type Framework struct {
 	Generator    string    `json:"generator"`
 	GeneratorCmd string    `json:"generatorcommand"`
 	Payloads     []Payload `json:"payloads"`
+	ListenerCmd  string    `json:"listenercommand"`
 }
 
 // Payload ...

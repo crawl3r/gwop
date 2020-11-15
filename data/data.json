@@ -18,6 +18,7 @@
             "name": "Metasploit",
             "generator": "msfvenom",
             "generatorcommand": "msfvenom -p etc",
+            "listenercommand": "msfconsole",
             "payloads": [
                 {
                     "operatingsystem": "Windows",
