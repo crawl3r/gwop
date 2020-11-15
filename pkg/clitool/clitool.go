@@ -216,15 +216,26 @@ func GetFrameworks(targetOs int) []Framework {
 
 // GetPayloads is a getter for the specific payloads from the already selected Framework, loaded from JSON
 func GetPayloads(framework int, opSys int) []string {
+	// this edge case is likely only used within the menu state. Haven't found same logic requirement elsewhere yet
+	if opSys == -1 {
+		allSpecificFrameworkOptions := []string{}
+		for _, p := range loadedData.Frameworks[framework].Payloads {
+			for _, po := range p.Options {
+				allSpecificFrameworkOptions = append(allSpecificFrameworkOptions, po)
+			}
+		}
+		return allSpecificFrameworkOptions
+	}
+
 	possibleFrameworks := GetFrameworks(opSys)
 	return possibleFrameworks[framework].Payloads[opSys].Options
 }
 
 // GetFrameworkOperatingSystemOptions is used in the menu states when helping list available Frameworks and their OS
-func GetFrameworkOperatingSystemOptions(frameworkId int) []string {
+func GetFrameworkOperatingSystemOptions(frameworkID int) []string {
 	opSystems := []string{}
 
-	for _, p := range loadedData.Frameworks[frameworkId].Payloads {
+	for _, p := range loadedData.Frameworks[frameworkID].Payloads {
 		opSystems = append(opSystems, p.OperatingSystem)
 	}
 

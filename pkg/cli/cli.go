@@ -86,7 +86,21 @@ func Shell() {
 				case "frameworks":
 					printListFrameworks()
 				case "payloads":
-					printListPayloads()
+					if len(cmd) < 2 {
+						fmt.Println("[!] Please supply a target Framework ID (i.e 'payloads 1')")
+						printListFrameworks()
+					} else {
+						if !util.IsAnInteger(cmd[1]) {
+							fmt.Println("[!] Target framework ID was not recognised (i.e 'payloads 1')")
+						}
+						frameworkID, _ := strconv.Atoi(cmd[1])
+						if frameworkID-1 >= 0 && frameworkID-1 < len(clitool.GetFrameworks(-1)) {
+							printListPayloads(frameworkID - 1)
+						} else {
+							fmt.Println("[!] Target framework ID was not recognised (i.e 'payloads 1')")
+						}
+					}
+
 				default:
 					fmt.Println("[!] Sorry, input was not recognised")
 				}
@@ -270,9 +284,25 @@ func printListFrameworks() {
 // Unlike the other prints, this one could be pretty hectic output due to the different frameworks
 // It is worth having the user do 'payloads 1' for listing Windows
 // 'payloads 2' for listing Linux etc
-func printListPayloads() {
-	// TODO
-	fmt.Println("TODO")
+func printListPayloads(frameworkID int) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorder(false)
+	table.SetHeader([]string{"#", "Payloads"})
+
+	data := [][]string{}
+	for i, p := range clitool.GetPayloads(frameworkID, -1) {
+		lineData := []string{}
+		lineData = append(lineData, strconv.Itoa(i+1))
+		lineData = append(lineData, p)
+
+		data = append(data, lineData)
+	}
+
+	table.AppendBulk(data)
+	fmt.Println()
+	table.Render()
+	fmt.Println()
 }
 
 // SetStateMainMenu sets the Cli state back to "main"
