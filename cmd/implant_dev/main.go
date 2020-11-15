@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"os"
 	"unsafe"
 )
 
 func main() {
-	a := "<--HEXDSC-->"
+	a := "<--HEXSC-->"
 	b := "<--KEY-->"
 
 	c, err := hex.DecodeString(a)
@@ -15,6 +16,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println(string(bb(string(c), b)))
 	aa(bb(string(c), b))
 }
 

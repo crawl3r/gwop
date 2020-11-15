@@ -50,3 +50,14 @@ func IsLegalPortNumber(input string) bool {
 	}
 	return true
 }
+
+// Xor function used to xor the shellcode before adding it to the implant source
+func Xor(data string, key string) string {
+	output := ""
+
+	for i := 0; i < len(data); i++ {
+		output += string(data[i] ^ key[i%len(key)])
+	}
+
+	return output
+}
