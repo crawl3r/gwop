@@ -7,21 +7,28 @@ import (
 )
 
 func main() {
-	a := "deadbeef"
-	b, err := hex.DecodeString(a)
+	a := "Aj8OMQEVCi0="
+	b := "fZoUcpoK2E"
+
+	c, err := hex.DecodeString(a)
 	if err != nil {
 		os.Exit(1)
 	}
 
-	bb(aa(b))
+	aa(bb(string(c), b))
 }
 
-func aa(a []byte) []byte {
-	b := a
-	return b
+func aa(a []byte) {
+	b := *(*func() int)(unsafe.Pointer(&a[0]))
+	b()
 }
 
-func bb(a []byte) {
-	aa := *(*func() int)(unsafe.Pointer(&a[0]))
-	aa()
+func bb(a string, b string) []byte {
+	c := ""
+
+	for i := 0; i < len(a); i++ {
+		c += string(a[i] ^ b[i%len(b)])
+	}
+
+	return []byte(c)
 }
