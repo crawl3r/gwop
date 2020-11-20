@@ -55,10 +55,28 @@ var loadedData AllLoadedData
 
 // StartImplantCreationProcess is called by the cli upon completion of the 'create' state
 func StartImplantCreationProcess(opts *PayloadOptions) {
+	directorySetup()
 	shellcode := generatePayload(opts)
 	generateImplantScript(shellcode)
 	if !compileAndStoreImplant(opts) {
 		fmt.Println("Implant failed to compile")
+	}
+}
+
+func directorySetup() {
+	// check to see if the required directories exist within the data directory
+	if _, err := os.Stat("data/generated_scripts"); os.IsNotExist(err) {
+		err = os.Mkdir("data/generated_scripts", 0700) // SECURITY NOTE: rwx.
+		if err != nil {
+			fmt.Println("[!] Failed to create data/generated_scripts directory")
+		}
+	}
+
+	if _, err := os.Stat("data/implants"); os.IsNotExist(err) {
+		err = os.Mkdir("data/implants", 0700) // SECURITY NOTE: rwx.
+		if err != nil {
+			fmt.Println("[!] Failed to create data/implants directory")
+		}
 	}
 }
 
@@ -135,7 +153,7 @@ func generateImplantScript(shellcode string) {
 
 	// 4) Blit text to a go script ready for compilation
 	fmt.Println("[*] Blitting implant file to Go script")
-	implantFile, err := os.Create("cmd/implant_gen/main.go")
+	implantFile, err := os.Create("data/generated_scripts/main.go")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -152,7 +170,7 @@ func generateImplantScript(shellcode string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("[*] Implant script created and ready for compilation (cmd/implant_gen/main.go)")
+	fmt.Println("[*] Implant script created and ready for compilation (data/generated_scripts/main.go)")
 }
 
 func compileAndStoreImplant(opts *PayloadOptions) bool {
@@ -180,7 +198,7 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 		fileExt = ".exe"
 	}
 
-	_, err := exec.Command("go", "build", "-ldflags", "-s -w", "-o", "out/implant-"+targetOs+fileExt, "data/generated_scripts/main.go").Output()
+	_, err := exec.Command("go", "build", "-ldflags", "-s -w", "-o", "data/implants/implant-"+targetOs+fileExt, "data/generated_scripts/main.go").Output()
 	if err != nil {
 		fmt.Println("Compilation err:", err)
 	}

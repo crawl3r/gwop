@@ -1,3 +1,5 @@
 .DS_STORE
 ./out/*
 todo.txt
+./data/generated_scripts
+./data/implants
