@@ -3,3 +3,5 @@
 todo.txt
 ./data/generated_scripts
 ./data/implants
+./data/generated_scripts/*
+./data/implants/*
