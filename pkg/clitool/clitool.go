@@ -78,7 +78,7 @@ func generatePayload(opts *PayloadOptions) string {
 
 	genOut, err := exec.Command(generatorCmd, splitGeneratorCmdArgs...).Output()
 	if err != nil {
-		fmt.Println("Payload generation err:", err)
+		fmt.Println("[!] Payload generation err:", err)
 	}
 
 	payloadShellcode := string(genOut)
