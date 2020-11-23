@@ -42,6 +42,7 @@ type Framework struct {
 	Generator    string    `json:"generator"`
 	GeneratorCmd string    `json:"generatorcommand"`
 	Payloads     []Payload `json:"payloads"`
+	Listener     string    `json:"listener"`
 	ListenerCmd  string    `json:"listenercommand"`
 }
 
@@ -64,11 +65,14 @@ func StartImplantCreationProcess(opts *PayloadOptions) {
 }
 
 func directorySetup() {
+	fmt.Println("[*] Checking for output directories")
 	// check to see if the required directories exist within the data directory
 	if _, err := os.Stat("data/generated_scripts"); os.IsNotExist(err) {
 		err = os.Mkdir("data/generated_scripts", 0700) // SECURITY NOTE: rwx.
 		if err != nil {
 			fmt.Println("[!] Failed to create data/generated_scripts directory")
+		} else {
+			fmt.Println("[*] Created data/generated_scripts directory")
 		}
 	}
 
@@ -76,6 +80,8 @@ func directorySetup() {
 		err = os.Mkdir("data/implants", 0700) // SECURITY NOTE: rwx.
 		if err != nil {
 			fmt.Println("[!] Failed to create data/implants directory")
+		} else {
+			fmt.Println("[*] Created data/implants directory")
 		}
 	}
 }
@@ -220,7 +226,35 @@ func compileAndStoreImplant(opts *PayloadOptions) bool {
 
 // StartListenerProcess is called by the cli on user demand and will start a listener related to the payload
 func StartListenerProcess(opts *PayloadOptions) {
-	fmt.Println("[!] Todo: implement this")
+	framework, _ := ConvertUserInputToFramework(opts.TargetFramework)
+	fmt.Printf("[*] Starting listener for: %s\n", framework)
+
+	listenerCmd := loadedData.Frameworks[opts.TargetFramework].Listener
+	listenerCmdArgs := loadedData.Frameworks[opts.TargetFramework].ListenerCmd
+	payload, _ := ConvertUserInputToPayload(opts.TargetFramework, opts.TargetOS, opts.Payload)
+
+	// TODO: Do we need a dynamic function here that populates a list based on how many args the listener commands have? TBC
+	listenerCmdArgs = strings.Replace(listenerCmdArgs, "<--payload-->", payload, 1)
+	listenerCmdArgs = strings.Replace(listenerCmdArgs, "<--ip-->", opts.Lhost, 1)
+	listenerCmdArgs = strings.Replace(listenerCmdArgs, "<--port-->", opts.Lport, 1)
+	splitListenerCmdArgs := []string{}
+
+	// framework specific arguments might require certain spits/arguments to be replaced etc
+	if framework == "Metasploit" {
+		splitListenerCmdArgs = strings.SplitN(listenerCmdArgs, " ", 2)
+	}
+
+	listCmdExec := exec.Command(listenerCmd, splitListenerCmdArgs...)
+	listCmdExec.Stdin = os.Stdin
+	listCmdExec.Stdout = os.Stdout
+	listCmdExec.Stderr = os.Stderr
+	err := listCmdExec.Run()
+	if err != nil {
+		fmt.Println("[!] Listener could not be started => err:", err)
+	}
+
+	// TODO: Do we return from here? Go routing the listener? Not sure.
+	fmt.Println("WE SHOULD SEE THIS AFTER MSFC IS EXITED")
 }
 
 // GetOperatingSystems is a getter for the slice of OS data loaded from JSON
