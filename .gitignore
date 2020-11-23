@@ -1,5 +1,8 @@
+.vscode/
+.vscode/*
 .DS_STORE
 ./out/
+./out/*
 todo.txt
 ./data/generated_scripts
 ./data/implants
